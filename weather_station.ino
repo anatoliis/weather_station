@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <DHT.h>;
 #include <Wire.h>
 #include <OneWire.h>
+#include <SimpleDHT.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 
@@ -36,7 +36,7 @@ long readingErrors = 0;
 bool bmpSensorFound = false;
 
 OneWire oneWire(ONE_WIRE_BUS);
-DHT dht(DHT_PIN, DHT_TYPE);
+SimpleDHT22 dht;
 Adafruit_BMP280 bme; // using hardware i2c bus
 ESP8266WebServer HTTP(80);
 
@@ -46,7 +46,6 @@ void setup() {
 
   ds18b20_initialize();
   bmp280_initialize();
-  dht.begin();
   
   startWiFi();
   startHTTP();
@@ -106,12 +105,13 @@ void bmp280_fetchPressure() {
 }
 
 void dht22_fetchData() {
-  float newHumidity = dht.readHumidity();
-  float newTemperature = dht.readTemperature();
-
-  if (isnan(newHumidity) || isnan(newTemperature)) {
+  float newTemperature = 0;
+  float newHumidity = 0;
+  int error = SimpleDHTErrSuccess;
+  if ((error = dht.read2(DHT_PIN, &newTemperature, &newHumidity, NULL)) != SimpleDHTErrSuccess) {
+    Serial.print("Read DHT22 failed, err=");
+    Serial.println(error);
     readingErrors++;
-    Serial.println("DHT: Error reading data");
   } else {
     humidity = newHumidity;
     temperature_dht = newTemperature;
