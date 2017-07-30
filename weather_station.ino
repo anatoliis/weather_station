@@ -18,9 +18,6 @@ byte temperatureSensorCollector[8];
 const char* ssid = "*****";
 const char* password = "*****";
 
-char responseBuffer[448];
-int responseBufferSize = 448;
-
 float temperature_1 = -273;
 float temperature_2 = -273;
 float temperature_dht = -273;
@@ -34,6 +31,10 @@ unsigned long lastFetchTimestamp = millis();
 long totalMeasures = 0;
 long readingErrors = 0;
 bool bmpSensorFound = false;
+
+String measurements[16];
+byte maxMeasurementsInArray = 16;
+byte lastMeasurementIndex = -1;
 
 OneWire oneWire(ONE_WIRE_BUS);
 SimpleDHT22 dht;
@@ -57,8 +58,35 @@ void loop() {
   dht22_fetchData();
   lastFetchTimestamp = millis();
   totalMeasures++;
+  saveMeasurementResults();
   printResults();
   operationalLoop(5000);
+}
+
+void saveMeasurementResults() {
+  String data = formatDataString();
+  lastMeasurementIndex++;
+  if (lastMeasurementIndex >= maxMeasurementsInArray) {
+    lastMeasurementIndex = 0;
+  }
+  measurements[lastMeasurementIndex] = data;
+}
+
+String getLastMeasurement() {
+  if (lastMeasurementIndex != -1) {
+    return String("[") + measurements[lastMeasurementIndex] + String("]");
+  }
+  return String("[]");
+}
+
+String getAllMeasurements() {
+  String result = String("[");
+  for (int i = 0; i < 16; i++) {
+    if (measurements[i].length() > 0) {
+      result += measurements[i] + String(",");      
+    }
+  }
+  return result + String("]");
 }
 
 void printResults() {
@@ -134,12 +162,20 @@ void startHTTP() {
   Serial.println("Starting HTTP...");
 
   HTTP.on("/", HTTP_GET, [](){
-    formatReadableResponse().toCharArray(responseBuffer, responseBufferSize);
+    char responseBuffer[512];
+    formatReadableResponse().toCharArray(responseBuffer, 512);
     HTTP.send(200, "text/html", responseBuffer);
   });
 
   HTTP.on("/data", HTTP_GET, [](){
-    formatResponse().toCharArray(responseBuffer, responseBufferSize);
+    char responseBuffer[128];
+    getData().toCharArray(responseBuffer, 128);
+    HTTP.send(200, "text/plain", responseBuffer);
+  });
+
+  HTTP.on("/data_all", HTTP_GET, [](){
+    char responseBuffer[1792];
+    getDataAll().toCharArray(responseBuffer, 1792);
     HTTP.send(200, "text/plain", responseBuffer);
   });
 
@@ -151,35 +187,58 @@ void startHTTP() {
   HTTP.begin();
 }
 
-String formatReadableResponse() {
-  float averageTemperature = (temperature_1 + temperature_2 + temperature_dht) / 3;
-  String response = String("<html><head><title>Weather Station</title></head><body>");
-  response += String("Temperature 1: ") + String(temperature_1, 2);
-  response += String("<br>Temperature 2: ") + String(temperature_2, 2);
-  response += String("<br>Temperature 3: ") + String(temperature_dht, 2);
-  response += String("<br>Temperature 4: ") + String(temperature_bmp, 2);
-  response += String("<br>Collector temperature: ") + String(temperature_collector, 2);
-  response += String("<br>Average temperature: ") + String(averageTemperature, 2);
-  response += String("<br>Pressure: ") + String(pressure, 2) + String(" / ") + String(pressure / 133.3223684, 2);
-  response += String("<br>Humidity: ") + String(humidity, 2);
-  response += String("<br>Unit temperature: ") + String(temperature_self);
-  response += String("<br>Measured: ") + String((float)(unsigned long)(millis() - lastFetchTimestamp) / 1000, 2) + String(" sec ago");
-  response += String("<br>Total measures: ") + String(totalMeasures, DEC);
-  response += String("<br>Errors: ") + String(readingErrors, DEC);
-  response += String(" (") + String((float)readingErrors / totalMeasures * 100, 2) + String("%)");
-  response += String("<br><br><small><a href=\"/data\">Raw data</a></small>");
-  return response + String("</body></html>");
+String addTimestamp(String string) {
+  return String("{d:") + string + String(",ts:") + millis() + String("}");
 }
 
-String formatResponse() {
-  String response = String("t1:") + String(temperature_1, 2);
-  response += String("|t2:") + String(temperature_2, 2);
-  response += String("|tdht:") + String(temperature_dht, 2);
-  response += String("|tbmp:") + String(temperature_bmp, 2);
-  response += String("|tu:") + String(temperature_self, 2);
-  response += String("|pr:") + String(pressure, 2);
-  response += String("|hm:") + String(humidity, 2);
-  return response + String("|ts:") + String((unsigned long)(millis() - lastFetchTimestamp));
+String getData() {
+  return addTimestamp(getLastMeasurement());
+}
+
+String getDataAll() {
+  return addTimestamp(getAllMeasurements());
+}
+
+String formatReadableResponse() {
+  float averageTemperature = (temperature_1 + temperature_2 + temperature_dht) / 3;
+  return \
+    String("<html><head><title>Weather Station</title></head><body>") + \
+    String("Temperature 1: ") + String(temperature_1, 2) + \
+    String("<br>Temperature 2: ") + String(temperature_2, 2) + \
+    String("<br>Temperature 3: ") + String(temperature_dht, 2) + \
+    String("<br>Temperature 4: ") + String(temperature_bmp, 2) + \
+    String("<br>Collector temperature: ") + String(temperature_collector, 2) + \
+    String("<br>Average temperature: ") + String(averageTemperature, 2) + \
+    String("<br>Pressure: ") + String(pressure, 2) + String(" / ") + String(pressure / 133.3223684, 2) + \
+    String("<br>Humidity: ") + String(humidity, 2) + \
+    String("<br>Unit temperature: ") + String(temperature_self) + \
+    String("<br>Measured: ") + String((float)(unsigned long)(millis() - lastFetchTimestamp) / 1000, 2) + String(" sec ago") + \
+    String("<br>Total measures: ") + String(totalMeasures, DEC) + \
+    String("<br>Errors: ") + String(readingErrors, DEC) + \
+    String(" (") + String((float)readingErrors / totalMeasures * 100, 2) + String("%)") + \
+    String("<br><br><small><a href=\"/data\">Raw data</a></small>") + \
+    String("<br><small><a href=\"/data_all\">Last 16 measurements</a></small>") + \
+    String("</body></html>");
+}
+
+String formatDataString() {
+  return formatJSON(temperature_1, temperature_2, temperature_dht,
+                        temperature_bmp, temperature_collector, temperature_self,
+                        pressure, humidity, lastFetchTimestamp);
+}
+
+String formatJSON(float t1, float t2, float t3, float t4, float tc, float t0, float pr, float hm, unsigned long ts) {
+  return \
+    String("{t1:") + String(t1, 2) + \
+    String(",t2:") + String(t2, 2) + \
+    String(",t3:") + String(t3, 2) + \
+    String(",t4:") + String(t4, 2) + \
+    String(",tc:") + String(tc, 2) + \
+    String(",t0:") + String(t0, 2) + \
+    String(",pr:") + String(pr, 2) + \
+    String(",hm:") + String(hm, 2) + \
+    String(",ts:") + String(ts, DEC) + \
+    String("}");
 }
 
 void ds18b20_initialize() {
