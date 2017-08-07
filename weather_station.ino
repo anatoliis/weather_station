@@ -128,10 +128,13 @@ String getAllMeasurements() {
   if (result.length() == 0) {
     return "";
   }
-  return CSVHeader + result + millis(); 
+  // TODO: fix
+  // If data will be requested after millis() rollover,
+  // the server side will not be able to calculate measurement timestamp
+  return CSVHeader + result + millis();
 }
 
-unsigned long lastDiag = millis();
+//unsigned long lastDiag = millis();
 
 void operationalLoop(int delayMs) {
   unsigned long start = millis();
@@ -139,11 +142,11 @@ void operationalLoop(int delayMs) {
     HTTP.handleClient();
     flow_processCounter();
     delay(1);
-    if (millis() - lastDiag > 5000) {
-      WiFi.printDiag(Serial);
-      Serial.println("-----");
-      lastDiag = millis();
-    }
+//    if (millis() - lastDiag > 5000) {
+//      WiFi.printDiag(Serial);
+//      Serial.println("-----");
+//      lastDiag = millis();
+//    }
   }
 }
 
