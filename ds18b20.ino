@@ -91,7 +91,13 @@ void ds18b20_fetchTemperatures() {
   temperature_1 = ds18b20_readTemperature(temperatureSensor1);
   temperature_2 = ds18b20_readTemperature(temperatureSensor2);
   temperature_self = ds18b20_readTemperature(temperatureSensorUnit);
-  temperature_collector = (ds18b20_readTemperature(temperatureSensorCollector) + ds18b20_readTemperature(temperatureSensorCollector2)) / 2;
+  
+  float collectorsTemperature = ds18b20_readTemperature(temperatureSensorCollector);
+  float collectorsTemperature2 = ds18b20_readTemperature(temperatureSensorCollector);
+  if (collectorsTemperature2 != -273) {
+    collectorsTemperature = (collectorsTemperature + collectorsTemperature2) / 2;
+  }
+  temperature_collector = collectorsTemperature;
 }
 
 void ds18b20_startConversion(byte* address) {
