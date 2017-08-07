@@ -22,8 +22,8 @@ void flow_initialize() {
 
 void flow_pulseCounter() {
   flowPulseCount++;
-  Serial.print("flow: ");
-  Serial.println(flowPulseCount);
+//  Serial.print("flow: ");
+//  Serial.println(flowPulseCount);
 }
 
 void flow_processCounter() {
