@@ -6,6 +6,7 @@ byte temperatureSensor1[8] = {0x28, 0xff, 0x70, 0xf3, 0x87, 0x16, 0x03, 0x60};
 byte temperatureSensor2[8] = {0x28, 0xff, 0x34, 0xff, 0xc0, 0x16, 0x05, 0x12};
 byte temperatureSensorUnit[8] = {0x28, 0xFF, 0xF7, 0x61, 0xB5, 0x16, 0x03, 0x8D};
 byte temperatureSensorCollector[8];
+byte temperatureSensorCollector2[8];
 
 OneWire oneWire(ONE_WIRE_BUS);
 
@@ -15,15 +16,21 @@ void ds18b20_initialize() {
 
 void ds18b20_findCollectorSensorAddress() {
   byte newSensorAddress[8];
+  bool firstFound = false;
   
   while (true) {
     bool found = oneWire.search(newSensorAddress);
     bool valid = ds18b20_validateSensorAddress(temperatureSensorCollector);
-    bool isNew = valid && ds18b20_isNewAddress(newSensorAddress);
-    if (isNew) {
-      memcpy(temperatureSensorCollector, newSensorAddress, 8);
+    bool isOk = valid && ds18b20_isNewAddress(newSensorAddress);
+    if (isOk) {
+      if (!firstFound) {
+        memcpy(temperatureSensorCollector, newSensorAddress, 8);
+        firstFound = true;
+      } else {
+        memcpy(temperatureSensorCollector2, newSensorAddress, 8);
+      }
       Serial.print("Found DS18B20: ");
-      ds18b20_printAddress(temperatureSensorCollector);
+      ds18b20_printAddress(newSensorAddress);
       break;
     }
     if (!found) {
@@ -54,6 +61,8 @@ bool ds18b20_isNewAddress(byte* address) {
   isNew = !ds18b20_compareAddresses(address, temperatureSensor2);
   if (!isNew) return false;
   isNew = !ds18b20_compareAddresses(address, temperatureSensorUnit);
+  if (!isNew) return false;
+  isNew = !ds18b20_compareAddresses(address, temperatureSensorCollector);
   return isNew;
 }
 
@@ -75,13 +84,14 @@ void ds18b20_fetchTemperatures() {
   ds18b20_startConversion(temperatureSensor2);
   ds18b20_startConversion(temperatureSensorUnit);
   ds18b20_startConversion(temperatureSensorCollector);
+  ds18b20_startConversion(temperatureSensorCollector2);
   
   operationalLoop(800);
   
   temperature_1 = ds18b20_readTemperature(temperatureSensor1);
   temperature_2 = ds18b20_readTemperature(temperatureSensor2);
   temperature_self = ds18b20_readTemperature(temperatureSensorUnit);
-  temperature_collector = ds18b20_readTemperature(temperatureSensorCollector);
+  temperature_collector = (ds18b20_readTemperature(temperatureSensorCollector) + ds18b20_readTemperature(temperatureSensorCollector2)) / 2;
 }
 
 void ds18b20_startConversion(byte* address) {
@@ -128,6 +138,7 @@ void ds18b20_changeSensorsResolution() {
   ds18b20_changeResolution(temperatureSensor2);
   ds18b20_changeResolution(temperatureSensorUnit);
   ds18b20_changeResolution(temperatureSensorCollector);
+  ds18b20_changeResolution(temperatureSensorCollector2);
 }
 
 void ds18b20_changeResolution(byte* address) {
