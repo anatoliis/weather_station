@@ -91,7 +91,10 @@ void loop() {
   lastFetchTimestamp = millis();
   operationalLoop(100);
   saveMeasurementResults();
-  operationalLoop(measurementsInterval - (unsigned long)(millis() - loopStartMillis));
+  unsigned long timeOfLoopPassed = millis() - loopStartMillis;
+  if (timeOfLoopPassed < measurementInterval) {
+    operationalLoop(measurementInterval - timePassed);
+  }
 }
 
 void saveMeasurementResults() {
@@ -132,11 +135,11 @@ unsigned long lastDiag = millis();
 
 void operationalLoop(int delayMs) {
   unsigned long start = millis();
-  while ((unsigned long)(millis() - start) < delayMs) {
+  while (millis() - start < delayMs) {
     HTTP.handleClient();
     flow_processCounter();
     delay(1);
-    if ((unsigned long)(millis() - lastDiag) > 5000) {
+    if (millis() - lastDiag > 5000) {
       WiFi.printDiag(Serial);
       Serial.println("-----");
       lastDiag = millis();
