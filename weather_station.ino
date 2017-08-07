@@ -92,8 +92,8 @@ void loop() {
   operationalLoop(100);
   saveMeasurementResults();
   unsigned long timeOfLoopPassed = millis() - loopStartMillis;
-  if (timeOfLoopPassed < measurementInterval) {
-    operationalLoop(measurementInterval - timePassed);
+  if (timeOfLoopPassed < measurementsInterval) {
+    operationalLoop(measurementsInterval - timeOfLoopPassed);
   }
 }
 
