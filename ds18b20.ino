@@ -17,11 +17,16 @@ void ds18b20_initialize() {
 void ds18b20_findCollectorSensorAddress() {
   byte newSensorAddress[8];
   bool firstFound = false;
+  bool secondFound = false;
   
   while (true) {
     bool found = oneWire.search(newSensorAddress);
     bool valid = ds18b20_validateSensorAddress(temperatureSensorCollector);
     bool isOk = valid && ds18b20_isNewAddress(newSensorAddress);
+    if (!found) {
+      Serial.println("No collector's DS18B20 found");
+      break;
+    }
     if (isOk) {
       if (!firstFound) {
         memcpy(temperatureSensorCollector, newSensorAddress, 8);
@@ -31,11 +36,6 @@ void ds18b20_findCollectorSensorAddress() {
       }
       Serial.print("Found DS18B20: ");
       ds18b20_printAddress(newSensorAddress);
-      break;
-    }
-    if (!found) {
-      Serial.println("No collector's DS18B20 found");
-      break;
     }
   }
 }
@@ -91,13 +91,9 @@ void ds18b20_fetchTemperatures() {
   temperature_1 = ds18b20_readTemperature(temperatureSensor1);
   temperature_2 = ds18b20_readTemperature(temperatureSensor2);
   temperature_self = ds18b20_readTemperature(temperatureSensorUnit);
-  
-  float collectorsTemperature = ds18b20_readTemperature(temperatureSensorCollector);
-  float collectorsTemperature2 = ds18b20_readTemperature(temperatureSensorCollector);
-  if (collectorsTemperature2 != -273) {
-    collectorsTemperature = (collectorsTemperature + collectorsTemperature2) / 2;
-  }
-  temperature_collector = collectorsTemperature;
+
+  temperature_collector = ds18b20_readTemperature(temperatureSensorCollector);
+  temperature_collector2 = ds18b20_readTemperature(temperatureSensorCollector2);
 }
 
 void ds18b20_startConversion(byte* address) {

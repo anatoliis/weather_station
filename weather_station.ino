@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-String CSVHeader = "t1,t2,t3,t4,tc,t0,pr,hm,fr,ml,ts\n";
+String CSVHeader = "t1,t2,t3,t4,tc,tc2,t0,pr,hm,fr,ml,ts\n";
 
 const char* ssid = "********";
 const char* password = "********";
@@ -18,6 +18,7 @@ float temperature_dht = -273;
 float temperature_bmp = -273;
 float temperature_self = -273;
 float temperature_collector = -273;
+float temperature_collector2 = -273;
 float pressure = 0;
 float humidity = 0;
 float flow_rate = 0;
@@ -207,6 +208,7 @@ String formatReadableResponse() {
     String("<br>Temperature 3: ") + String(temperature_dht, 2) + \
     String("<br>Temperature 4: ") + String(temperature_bmp, 2) + \
     String("<br>Collector temperature: ") + String(temperature_collector, 2) + \
+    String("<br>Collector temperature 2: ") + String(temperature_collector2, 2) + \
     String("<br>Average temperature: ") + String(averageTemperature, 2) + \
     String("<br>Pressure: ") + String(pressure, 2) + String(" / ") + String(pressure / 133.3223684, 2) + \
     String("<br>Humidity: ") + String(humidity, 2) + \
@@ -229,6 +231,7 @@ String formatDataString() {
     String(",") + String(temperature_dht, 2) + \
     String(",") + String(temperature_bmp, 2) + \
     String(",") + String(temperature_collector, 2) + \
+    String(",") + String(temperature_collector2, 2) + \
     String(",") + String(temperature_self, 2) + \
     String(",") + String(pressure, 2) + \
     String(",") + String(humidity, 2) + \
