@@ -32,18 +32,18 @@ void flow_processCounter() {
     detachInterrupt(FLOW_SENSOR_INTERRUPT);
     // TODO: implement saving flow_rate
     flow_rate = ((1000.0 / (unsigned long)(millis() - lastFlowUpdateTime)) * flowPulseCount) / flowCalibrationFactor;
-    Serial.println("-----");
-    Serial.print("flow rate: ");
-    Serial.println(flow_rate);
+//    Serial.println("-----");
+//    Serial.print("flow rate: ");
+//    Serial.println(flow_rate);
     lastFlowUpdateTime = millis();
     flowMillilitres = (flow_rate / 60) * 1000;
-    Serial.print("flow ml: ");
-    Serial.println(flowMillilitres);
+//    Serial.print("flow ml: ");
+//    Serial.println(flowMillilitres);
     totalMillilitres += flowMillilitres;
     millilitres += flowMillilitres;
-    Serial.print("total ml: ");
-    Serial.println(totalMillilitres);
-    Serial.println(millilitres);
+//    Serial.print("total ml: ");
+//    Serial.println(totalMillilitres);
+//    Serial.println(millilitres);
     flowPulseCount = 0;
     attachInterrupt(FLOW_SENSOR_INTERRUPT, flow_pulseCounter, FALLING);
   }

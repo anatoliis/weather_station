@@ -3,7 +3,7 @@
 
 String CSVHeader = "t1,t2,t3,t4,tc,tc2,t0,pr,hm,fr,ml,ts\n";
 
-const char* ssid = "********";
+const char* ssid = "Tenda_3D3FF0";
 const char* password = "********";
 IPAddress wifi_ip(192, 168, 0, 195);
 IPAddress wifi_gate(192, 168, 0, 1);
@@ -61,8 +61,6 @@ void setup() {
 void startWiFi() {
   Serial.println("Connecting to WiFi");
 
-//  WiFi.persistent(false);
-//  WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_STA);
   WiFi.config(wifi_ip, wifi_gate, wifi_sub);
   WiFi.begin(ssid, password);
@@ -135,7 +133,7 @@ String getAllMeasurements() {
   return CSVHeader + result + millis();
 }
 
-//unsigned long lastDiag = millis();
+unsigned long lastDiag = millis();
 
 void operationalLoop(int delayMs) {
   unsigned long start = millis();
@@ -143,11 +141,11 @@ void operationalLoop(int delayMs) {
     HTTP.handleClient();
     flow_processCounter();
     delay(1);
-//    if (millis() - lastDiag > 5000) {
-//      WiFi.printDiag(Serial);
-//      Serial.println("-----");
-//      lastDiag = millis();
-//    }
+    if (millis() - lastDiag > 10000) {
+      WiFi.printDiag(Serial);
+      Serial.println("-----");
+      lastDiag = millis();
+    }
   }
 }
 
