@@ -134,14 +134,16 @@ void startHTTP() {
 
 String formatReadableResponse() {
   float averageTemperature = (temperature_1 + temperature_2 + temperature_dht) / 3;
+  float averageCollectorTemperature = (temperature_collector + temperature_collector2) / 2;
   return \
     String("<html><head><title>Weather Station</title></head><body>") + \
-    String("Temperature 1: ") + String(temperature_1, 2) + \
+    String("<br>Temperature: ") + String(averageTemperature, 2) + \
+    String("<br>Collector temperature: ") + String(averageCollectorTemperature, 2) + \
+    String("<br><br>Temperature 1: ") + String(temperature_1, 2) + \
     String("<br>Temperature 2: ") + String(temperature_2, 2) + \
     String("<br>Temperature 3: ") + String(temperature_dht, 2) + \
     String("<br>Collector temperature 1: ") + String(temperature_collector, 2) + \
     String("<br>Collector temperature 2: ") + String(temperature_collector2, 2) + \
-    String("<br>Average temperature: ") + String(averageTemperature, 2) + \
     String("<br>Measured: ") + String((float)(unsigned long)(millis() - lastFetchTimestamp) / 1000, 2) + String(" sec ago") + \
     String("<br><br><small><a href=\"/data\">Raw data</a></small>") + \
     String("</body></html>");
