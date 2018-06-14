@@ -12,7 +12,6 @@ void dht22_fetchData() {
     Serial.print("Read DHT22 failed, err=");
     Serial.println(error);
   } else {
-    humidity = newHumidity;
     temperature_dht = newTemperature;
   }
 }
