@@ -4,7 +4,6 @@
 
 byte temperatureSensor1[8] = {0x28, 0xff, 0x70, 0xf3, 0x87, 0x16, 0x03, 0x60};
 byte temperatureSensor2[8] = {0x28, 0xff, 0x34, 0xff, 0xc0, 0x16, 0x05, 0x12};
-byte temperatureSensorUnit[8] = {0x28, 0xFF, 0xF7, 0x61, 0xB5, 0x16, 0x03, 0x8D};
 byte temperatureSensorCollector[8];
 byte temperatureSensorCollector2[8];
 
@@ -60,8 +59,6 @@ bool ds18b20_isNewAddress(byte* address) {
   if (!isNew) return false;
   isNew = !ds18b20_compareAddresses(address, temperatureSensor2);
   if (!isNew) return false;
-  isNew = !ds18b20_compareAddresses(address, temperatureSensorUnit);
-  if (!isNew) return false;
   isNew = !ds18b20_compareAddresses(address, temperatureSensorCollector);
   return isNew;
 }
@@ -82,7 +79,6 @@ bool ds18b20_validateSensorAddress(byte* address) {
 void ds18b20_fetchTemperatures() {
   ds18b20_startConversion(temperatureSensor1);
   ds18b20_startConversion(temperatureSensor2);
-  ds18b20_startConversion(temperatureSensorUnit);
   ds18b20_startConversion(temperatureSensorCollector);
   ds18b20_startConversion(temperatureSensorCollector2);
   
@@ -90,9 +86,7 @@ void ds18b20_fetchTemperatures() {
   
   temperature_1 = ds18b20_readTemperature(temperatureSensor1);
   temperature_2 = ds18b20_readTemperature(temperatureSensor2);
-  temperature_self = ds18b20_readTemperature(temperatureSensorUnit);
-
-  temperature_collector = ds18b20_readTemperature(temperatureSensorCollector);
+  temperature_collector1 = ds18b20_readTemperature(temperatureSensorCollector);
   temperature_collector2 = ds18b20_readTemperature(temperatureSensorCollector2);
 }
 
@@ -138,7 +132,6 @@ bool ds18b20_readScratch(byte* address, byte* scratch) {
 void ds18b20_changeSensorsResolution() {
   ds18b20_changeResolution(temperatureSensor1);
   ds18b20_changeResolution(temperatureSensor2);
-  ds18b20_changeResolution(temperatureSensorUnit);
   ds18b20_changeResolution(temperatureSensorCollector);
   ds18b20_changeResolution(temperatureSensorCollector2);
 }
