@@ -86,7 +86,7 @@ void ds18b20_fetchTemperatures() {
   
   temperature_1 = ds18b20_readTemperature(temperatureSensor1);
   temperature_2 = ds18b20_readTemperature(temperatureSensor2);
-  temperature_collector = ds18b20_readTemperature(temperatureSensorCollector);
+  temperature_collector1 = ds18b20_readTemperature(temperatureSensorCollector);
   temperature_collector2 = ds18b20_readTemperature(temperatureSensorCollector2);
 }
 

@@ -1,10 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-String CSVHeader = "t1,t2,t3,tc,tc2,ts\n";
+String CSVHeader = "t1,t2,t3,tc1,tc2,ts\n";
 
-const char* ssid = "Tenda_3D3FF0";
-const char* password = "********";
+const char* ssid = "*";
+const char* password = "*";
 IPAddress wifi_ip(192, 168, 0, 195);
 IPAddress wifi_gate(192, 168, 0, 1);
 IPAddress wifi_sub(255, 255, 255, 0);
@@ -15,20 +15,13 @@ int measurementsInterval = 5000;
 float temperature_1 = -273;
 float temperature_2 = -273;
 float temperature_dht = -273;
-float temperature_collector = -273;
+float temperature_collector1 = -273;
 float temperature_collector2 = -273;
 unsigned long lastFetchTimestamp = millis();
 ////
 
-//unsigned long totalMillilitres;
-//unsigned long millilitres;
-
-// Temporary/helping
 char indexBuffer[640];
 char dataBuffer[128];
-char dataAllBuffer[3072];
-int dataAllBufferSize = 3072;
-////
 
 ESP8266WebServer HTTP(80);
 
@@ -134,26 +127,26 @@ void startHTTP() {
 
 String formatReadableResponse() {
   float averageTemperature = (temperature_1 + temperature_2 + temperature_dht) / 3;
-  float averageCollectorTemperature = (temperature_collector + temperature_collector2) / 2;
-  return \
-    String("<html><head><title>Weather Station</title></head><body>") + \
-    String("<br>Temperature: ") + String(averageTemperature, 2) + \
+  float averageCollectorTemperature = (temperature_collector1 + temperature_collector2) / 2;
+  String response = String("<html><head><title>Weather Station</title></head><body>") + \
+    String("Temperature: ") + String(averageTemperature, 2) + \
     String("<br>Collector temperature: ") + String(averageCollectorTemperature, 2) + \
     String("<br><br>Temperature 1: ") + String(temperature_1, 2) + \
     String("<br>Temperature 2: ") + String(temperature_2, 2) + \
     String("<br>Temperature 3: ") + String(temperature_dht, 2) + \
-    String("<br>Collector temperature 1: ") + String(temperature_collector, 2) + \
+    String("<br>Collector temperature 1: ") + String(temperature_collector1, 2) + \
     String("<br>Collector temperature 2: ") + String(temperature_collector2, 2) + \
     String("<br>Measured: ") + String((float)(unsigned long)(millis() - lastFetchTimestamp) / 1000, 2) + String(" sec ago") + \
     String("<br><br><small><a href=\"/data\">Raw data</a></small>") + \
     String("</body></html>");
+  return response;
 }
 
 String formatDataString() {
   return String(temperature_1, 2) + \
     String(",") + String(temperature_2, 2) + \
     String(",") + String(temperature_dht, 2) + \
-    String(",") + String(temperature_collector, 2) + \
+    String(",") + String(temperature_collector1, 2) + \
     String(",") + String(temperature_collector2, 2) + \
     String(",") + String(lastFetchTimestamp, DEC);
 }
