@@ -138,7 +138,7 @@ String formatReadableResponse() {
     String("<br>Collector temperature 2: ") + String(temperature_collector2, 2) + \
     String("<br>Measured: ") + String((float)(unsigned long)(millis() - lastFetchTimestamp) / 1000, 2) + String(" sec ago") + \
     String("<br><br><small><a href=\"/data\">Raw data</a></small>") + \
-    String("</body></html>");
+    String("<br><br>Time: <div id="t"></div></body><script>window.onload = function(){const d=new Date();document.getElementById('t').innerHTML=d.toTimeString().split(" ")[0]+", "+d.toDateString();}</script></html>");
   return response;
 }
 
